@@ -231,7 +231,7 @@ Kff .= K[free_dof, free_dof]
 md"""Define the external forces on the structural system."""
 
 # ╔═╡ fb53ee98-6a45-11eb-1433-654b02ed169c
-F = [0.0, 0.0, 200000.0, 0.0, 0.0, 0.0]
+F = [0.0, 0.0, 500000.0, 0.0, 0.0, 0.0]
 
 # ╔═╡ 42233ea4-6a47-11eb-1997-d3df5a0c7e50
 md"""Partition the external force vector to only find the free degrees of freedom."""
