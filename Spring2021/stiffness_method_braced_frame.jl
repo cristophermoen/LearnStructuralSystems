@@ -248,8 +248,53 @@ md"""Calculate the displacements at the free degrees of freedom."""
 # ╔═╡ 2eee3ccc-6a46-11eb-3943-4bf3e186c5bf
 uf = Kff^-1*Ff
 
-# ╔═╡ 64733c1c-6a46-11eb-31d6-3bc96f3235a5
+# ╔═╡ e939c8b0-6bb5-11eb-1546-cbc8dc218f37
+num_nodes = size(node_geometry)[1]
 
+# ╔═╡ 223423ae-6bb6-11eb-2c9e-c5b76c736771
+num_dof_per_node = 2  #for a two force element
+
+# ╔═╡ 2c7dc964-6bb6-11eb-248c-db03b71db892
+num_dof = num_nodes * num_dof_per_node
+
+# ╔═╡ 4d02893e-6bb6-11eb-1b5a-6fa0f4f89e26
+u = zeros(Float64, num_dof)
+
+# ╔═╡ 56a675ee-6bb6-11eb-2f77-f17cce08e28d
+u[free_dof] = uf
+
+# ╔═╡ 627c84a6-6bb6-11eb-1616-07a1b31fae3a
+u
+
+# ╔═╡ 64733c1c-6a46-11eb-31d6-3bc96f3235a5
+fixed_dof = findall(x->x==1, supports)
+
+# ╔═╡ d1fecb82-6bb5-11eb-021f-c1af7bb6fa78
+s = fixed_dof
+
+# ╔═╡ d824da10-6bb5-11eb-1a41-1ff2741aec0e
+f = free_dof
+
+# ╔═╡ 891e52a6-6bb6-11eb-25b8-8bb84fb6563e
+Ksf = zeros(Float64, (length(s), length(f)))
+
+# ╔═╡ de1998ac-6bb5-11eb-207d-9d9d31e7107b
+Ksf .= K[s, f]
+
+# ╔═╡ ac4608c8-6bb6-11eb-1c46-fba5d87d7974
+Fs = Ksf * uf
+
+# ╔═╡ 17ec726c-6bd3-11eb-0454-f9f79fcafd13
+md"""Define global displacement vector for element 1."""
+
+# ╔═╡ 831d4adc-6bb7-11eb-069a-2f51cbf327cf
+u_global_e1 = u[1:4]
+
+# ╔═╡ 9eb8df04-6bb7-11eb-2a33-6f9324c55428
+u_local_e1 = T_1 * u_global_e1
+
+# ╔═╡ 06c94c9a-6bb9-11eb-2d49-010baf4e0622
+f_local_e1 = k_local_1 * u_local_e1
 
 # ╔═╡ Cell order:
 # ╟─8904b762-64ac-11eb-30d0-a7cc5cf93812
@@ -312,4 +357,19 @@ uf = Kff^-1*Ff
 # ╠═33675d6a-6a46-11eb-1828-27e3fae21556
 # ╠═5715746c-6a47-11eb-0edc-affdece3d65d
 # ╠═2eee3ccc-6a46-11eb-3943-4bf3e186c5bf
+# ╠═e939c8b0-6bb5-11eb-1546-cbc8dc218f37
+# ╠═223423ae-6bb6-11eb-2c9e-c5b76c736771
+# ╠═2c7dc964-6bb6-11eb-248c-db03b71db892
+# ╠═4d02893e-6bb6-11eb-1b5a-6fa0f4f89e26
+# ╠═56a675ee-6bb6-11eb-2f77-f17cce08e28d
+# ╠═627c84a6-6bb6-11eb-1616-07a1b31fae3a
 # ╠═64733c1c-6a46-11eb-31d6-3bc96f3235a5
+# ╠═d1fecb82-6bb5-11eb-021f-c1af7bb6fa78
+# ╠═d824da10-6bb5-11eb-1a41-1ff2741aec0e
+# ╠═891e52a6-6bb6-11eb-25b8-8bb84fb6563e
+# ╠═de1998ac-6bb5-11eb-207d-9d9d31e7107b
+# ╠═ac4608c8-6bb6-11eb-1c46-fba5d87d7974
+# ╟─17ec726c-6bd3-11eb-0454-f9f79fcafd13
+# ╠═831d4adc-6bb7-11eb-069a-2f51cbf327cf
+# ╠═9eb8df04-6bb7-11eb-2a33-6f9324c55428
+# ╠═06c94c9a-6bb9-11eb-2d49-010baf4e0622
