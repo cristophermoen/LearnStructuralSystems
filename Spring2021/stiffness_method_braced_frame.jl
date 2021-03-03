@@ -27,6 +27,7 @@ md""" Define nodal geometry of our structural system.
 """
 
 # ╔═╡ ea4e82a4-64ad-11eb-05f9-0dcb561d1268
+#                 x  y
 node_geometry = [0.0 0.0;
 	             3100/tan(deg2rad(48)) 3100.0;
 	             3100/tan(deg2rad(48))*2 0.0]  #mm
@@ -281,6 +282,9 @@ Ksf = zeros(Float64, (length(s), length(f)))
 # ╔═╡ de1998ac-6bb5-11eb-207d-9d9d31e7107b
 Ksf .= K[s, f]
 
+# ╔═╡ bdeca2ec-6fc3-11eb-2eda-ada0ae2bd56c
+K
+
 # ╔═╡ ac4608c8-6bb6-11eb-1c46-fba5d87d7974
 Fs = Ksf * uf
 
@@ -368,6 +372,7 @@ f_local_e1 = k_local_1 * u_local_e1
 # ╠═d824da10-6bb5-11eb-1a41-1ff2741aec0e
 # ╠═891e52a6-6bb6-11eb-25b8-8bb84fb6563e
 # ╠═de1998ac-6bb5-11eb-207d-9d9d31e7107b
+# ╠═bdeca2ec-6fc3-11eb-2eda-ada0ae2bd56c
 # ╠═ac4608c8-6bb6-11eb-1c46-fba5d87d7974
 # ╟─17ec726c-6bd3-11eb-0454-f9f79fcafd13
 # ╠═831d4adc-6bb7-11eb-069a-2f51cbf327cf
