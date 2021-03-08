@@ -177,6 +177,9 @@ k_global_1 = T_1' * k_local_1 * T_1
 # ╔═╡ 95260cb0-6661-11eb-3568-d3b4b8513d5f
 k_global_2 = T_2' * k_local_2 * T_2
 
+# ╔═╡ 3113be30-7de1-11eb-2e65-271238b2dff4
+k_local_1 * T_1
+
 # ╔═╡ a52e5996-6661-11eb-2ee5-8dd542b1a27c
 md"""Now these element stiffness matrices are ready for assembly into the global stiffness matrix.  See Sennett Section 2.3 for some examples."""
 
@@ -337,6 +340,7 @@ f_local_e1 = k_local_1 * u_local_e1
 # ╟─6cd33c74-6661-11eb-3e0b-81843314eb9d
 # ╠═809d4e54-6661-11eb-2e59-65f130953ddc
 # ╠═95260cb0-6661-11eb-3568-d3b4b8513d5f
+# ╠═3113be30-7de1-11eb-2e65-271238b2dff4
 # ╠═a52e5996-6661-11eb-2ee5-8dd542b1a27c
 # ╠═52f154ae-6a43-11eb-1917-51b32a568eee
 # ╠═459b5aac-6a43-11eb-06a8-eda347c520aa
