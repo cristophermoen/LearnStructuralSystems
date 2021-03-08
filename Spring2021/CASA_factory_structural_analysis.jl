@@ -120,12 +120,12 @@ dx = diff(x)
 dy = diff(y)
 ds = sqrt.(dx.^2 + dy.^2)
 
-s_top_chord = sum(ds)  #This is the length of the bottom chord.  
+s_top_chord = sum(ds)  #This is the length of the top chord.  
 
-#Calculate the typical length of a bottom chord segment between truss diagonals.
+#Calculate the typical length of a top chord segment between truss diagonals.
 length_top_chord_segment = s_top_chord / num_top_chord_arch_segments
 
-#Define all the bottom chord segments along the bottom chord.
+#Define all the top chord segments along the top chord.
 top_chord_arch_layout = ones(Float64, num_top_chord_arch_segments) * length_top_chord_segment
 
 x_top_chord, y_top_chord = calculate_arch_xy(top_chord_arch_layout, h_top_chord, L_top_chord)
