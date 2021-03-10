@@ -1,8 +1,14 @@
 ### A Pluto.jl notebook ###
-# v0.12.20
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
+
+# ╔═╡ 055402ba-81b7-11eb-37a6-59609d53d310
+using StructuresKit
+
+# ╔═╡ a3d0eb1e-81b8-11eb-3a93-973193b248ff
+using Plots
 
 # ╔═╡ b1cd585c-8103-11eb-24c8-bfa388e7c514
 function parabola(h, L, x)
@@ -296,39 +302,180 @@ trib_width = 8260. #mm
 # ╔═╡ 91d839b8-810b-11eb-1ac1-a335bb8e7e7e
 w_windward = p_windward * trib_width #N/mm
 
-# ╔═╡ 18dc1602-810c-11eb-300f-d7dd63be8b35
+# ╔═╡ 352e4c58-81b1-11eb-2449-cd5c483cdfc2
+w_center = p_center * trib_width
 
+# ╔═╡ 3cee1400-81b1-11eb-1606-1df75151ba01
+w_leeward = p_leeward * trib_width
 
-# ╔═╡ 657229dc-810c-11eb-2457-47382dac4cc2
-center_node_range = 49:49+18
+# ╔═╡ 4a36bee6-81b1-11eb-02fd-fbbc7fe65b74
+windward_node_index = findall(x->x<=L_top_chord/4, x_top_chord) 
 
-# ╔═╡ 7636074a-810c-11eb-1bab-ab37276a377e
-leeward_node_range = 68:75
+# ╔═╡ f220e9a0-81b2-11eb-2f07-61b8f791d854
+windward_node_range = windward_node_index .+ num_bottom_chord_nodes
+
+# ╔═╡ 9b010cfa-81b1-11eb-24cf-85f003a6049e
+center_node_index = findall(x->((x>L_top_chord/4) & (x<3 * L_top_chord/4)), x_top_chord) 
+
+# ╔═╡ 07f6a288-81b3-11eb-114b-49cb5830f762
+center_node_range = center_node_index .+ num_bottom_chord_nodes
+
+# ╔═╡ f4804bce-81b1-11eb-2632-5328c3f417aa
+leeward_node_index = findall(x->x> 3*L_top_chord/4, x_top_chord)
+
+# ╔═╡ 1946fc72-81b3-11eb-24ca-f766b8e80c1f
+leeward_node_range = leeward_node_index .+ num_bottom_chord_nodes
 
 # ╔═╡ 894f99d6-810c-11eb-0b0e-1bdc56a2de41
-P_windward = w_windward * length_top_chord_segment
+P_windward = w_windward * length_top_chord_segment   #N
 
-# ╔═╡ de9168de-810c-11eb-0064-cb0d9e164dbe
-#for left springing point, first node
-not_used, dy_dx_1 = parabola(h_top_chord, L_top_chord, 0.0)
+# ╔═╡ 7dfa2ab4-81b2-11eb-1f6a-29e4eeb4e60f
+P_center = w_center * length_top_chord_segment  #N
 
-# ╔═╡ 8093ec88-810d-11eb-24ab-bb36186ae7ac
-face_angle = atan(dy_dx_1)
+# ╔═╡ 8d4120ae-81b2-11eb-0a23-45b509d1a40b
+P_leeward = w_leeward * length_top_chord_segment #N
+
+# ╔═╡ 6b63f3e8-81b3-11eb-21e6-fde00c5dcc29
+P_wind = zeros(Float64, num_top_chord_nodes)
+
+# ╔═╡ 9f0d935c-81b3-11eb-02da-ff1cd1751b6b
+P_wind[windward_node_index] .= P_windward
+
+# ╔═╡ fdebaabc-81b3-11eb-16c2-37a14a0f89c4
+P_wind[center_node_index] .= P_center
+
+# ╔═╡ 08e34eca-81b4-11eb-2de5-df2c13ab1bfb
+P_wind[leeward_node_index] .= P_leeward
+
+# ╔═╡ 1a6cec78-81b4-11eb-2434-f109162c84c3
+not_used, dy_dx_top_chord_nodes = parabola(h_top_chord, L_top_chord, x_top_chord)
+
+# ╔═╡ 7c5b9c86-81b4-11eb-0f18-652107f741b9
+top_chord_angle = atan.(dy_dx_top_chord_nodes)
+
+# ╔═╡ f4698102-81b4-11eb-1c34-41337fa84158
+rad2deg.(top_chord_angle)
+
+# ╔═╡ 6c9273ba-81b4-11eb-12a1-53d45f118b65
+P_wind_x = P_wind .* cos.(π/2 .- top_chord_angle)
+
+# ╔═╡ a5ea598e-81b4-11eb-1da8-bbba07b26ded
+P_wind_y = -P_wind .* sin.(π/2 .- top_chord_angle)  #note negative sign here
 
 # ╔═╡ 34dbd85e-810e-11eb-02b3-e928e9bcbc7d
 external_forces = zeros(Float64, num_nodes * 2)
 
-# ╔═╡ b6bdbe06-810d-11eb-0b03-f55f968e6602
-external_forces[38*2 + 1] = P_windward/2 * cos(face_angle)
+# ╔═╡ aaeb3b64-81b5-11eb-3bd7-739827b62939
+external_forces[(windward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[windward_node_index]
 
-# ╔═╡ ef4a7d68-810d-11eb-3f56-f93dd251f8c6
-external_forces[38*2 + 2] = -P_windward/2 * sin(face_angle)
+# ╔═╡ a6d336e6-81c2-11eb-218a-2b373e3dc240
+external_forces
 
-# ╔═╡ f2a279a4-810b-11eb-19c3-79e560d45b43
-top_chord_arch_layout
+# ╔═╡ 5528de4c-81b6-11eb-1ba4-5d5b816f3804
+external_forces[(windward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[windward_node_index]
 
-# ╔═╡ f23a685a-810b-11eb-186b-259e129ca440
+# ╔═╡ d6a3c290-81c5-11eb-2317-cd6fc0faacc1
+external_forces
 
+# ╔═╡ 65cd8c2a-81b6-11eb-0a1d-cf523d856b8a
+external_forces[(center_node_range .- 1) .* 2 .+ 1] .= P_wind_x[center_node_index]
+
+# ╔═╡ dfce3cb8-81c5-11eb-1828-237015b9ba82
+external_forces
+
+# ╔═╡ 8388b212-81b6-11eb-3cc2-116509bde9b9
+external_forces[(center_node_range .- 1) .* 2 .+ 2] .= P_wind_y[center_node_index]
+
+# ╔═╡ e95e2cac-81c5-11eb-3e32-1becd6f6f29d
+external_forces
+
+# ╔═╡ 8c877e02-81b6-11eb-1a62-c97efbadf078
+external_forces[(leeward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[leeward_node_index]
+
+# ╔═╡ efd35b3e-81c5-11eb-02c8-d7cecaa7429a
+external_forces
+
+# ╔═╡ 9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
+external_forces[(leeward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[leeward_node_index]
+
+# ╔═╡ f93d9cb6-81c5-11eb-2b06-2b9b7bdf7c09
+external_forces
+
+# ╔═╡ 028f0e26-81b7-11eb-1bdb-1f93f33adbe3
+begin
+CASA = Truss.define(members, section_properties, material_properties, node_geometry, supports, external_forces)
+	
+CASA = Truss.solve(CASA)
+	
+end
+
+# ╔═╡ 63271808-81cd-11eb-283b-2fc579b4f9db
+CASA.external_forces
+
+# ╔═╡ ae3b28c6-81b8-11eb-1c90-1fdccbc827b3
+δx = CASA.u[1:2:end]
+
+# ╔═╡ f46166ee-81b8-11eb-05be-a5d55e9dac2a
+δy = CASA.u[2:2:end]
+
+# ╔═╡ 0173266a-81b9-11eb-1343-e5fa5cd85298
+scale_x = 200.0
+
+# ╔═╡ 0c493566-81b9-11eb-00d1-afd586cb640f
+scale_y = 200.0
+
+# ╔═╡ 10bd20ee-81b9-11eb-29cb-d77158637266
+# begin
+# plot(node_geometry[:,1], node_geometry[:,2], seriestype = :scatter, legend = false, size=(600,600), xlims = (-3000, L_bottom_chord + 3000), ylims = (-3000, L_bottom_chord + 3000))
+# plot!(node_geometry[:,1] .+ δx .* scale_x, node_geometry[:,2] .+ δy .* scale_y, seriestype = :scatter, legend = false)
+# end
+
+# ╔═╡ 0a5888f2-81bd-11eb-2f3b-a504d4ae781f
+#Define graph of arch elements and nodes.
+
+# ╔═╡ 18f8a626-81bd-11eb-371d-8b09229fdeae
+g = zeros(Int64, (num_nodes, num_nodes))
+
+# ╔═╡ c9d71a14-81bc-11eb-09d6-976ba1d71ee0
+begin
+	using GraphRecipes
+
+graphplot(g,
+          x=node_geometry[:,1], y=node_geometry[:,2],
+          nodeshape=:circle, nodesize=2,
+          axis_buffer=0.01,
+          curves=false,
+          color=:red,
+          linewidth=1)
+	
+graphplot!(g,
+          x=node_geometry[:,1] .+ δx .* scale_x, y=node_geometry[:,2] .+ δy .* scale_y,
+          nodeshape=:circle, nodesize=2,
+          axis_buffer=0.01,
+          curves=false,
+          color=:black,
+          linewidth=1)
+	
+	quiver!(node_geometry[:,1],node_geometry[:,2],quiver=(external_forces[1:2:end]./10, external_forces[2:2:end]./10))
+	
+end
+
+# ╔═╡ 3d35e698-81bd-11eb-3a99-0f4d644cc8ee
+begin
+start_nodes = [x[1] for x in members]
+end_nodes = [x[2] for x in members]
+
+for i = 1:num_nodes
+	
+	index = findall(x->x==i, start_nodes)
+	
+	g[i, end_nodes[index]] .= 1
+	
+end
+end
+
+# ╔═╡ 46d71620-81bf-11eb-3a55-af708b8bf3d0
+g
 
 # ╔═╡ Cell order:
 # ╠═b1cd585c-8103-11eb-24c8-bfa388e7c514
@@ -371,14 +518,50 @@ top_chord_arch_layout
 # ╠═7f4259d4-810b-11eb-1672-771092efea9e
 # ╠═ab76bd56-810b-11eb-2992-5d5fba4177cf
 # ╠═91d839b8-810b-11eb-1ac1-a335bb8e7e7e
-# ╠═18dc1602-810c-11eb-300f-d7dd63be8b35
-# ╠═657229dc-810c-11eb-2457-47382dac4cc2
-# ╠═7636074a-810c-11eb-1bab-ab37276a377e
+# ╠═352e4c58-81b1-11eb-2449-cd5c483cdfc2
+# ╠═3cee1400-81b1-11eb-1606-1df75151ba01
+# ╠═4a36bee6-81b1-11eb-02fd-fbbc7fe65b74
+# ╠═f220e9a0-81b2-11eb-2f07-61b8f791d854
+# ╠═9b010cfa-81b1-11eb-24cf-85f003a6049e
+# ╠═07f6a288-81b3-11eb-114b-49cb5830f762
+# ╠═f4804bce-81b1-11eb-2632-5328c3f417aa
+# ╠═1946fc72-81b3-11eb-24ca-f766b8e80c1f
 # ╠═894f99d6-810c-11eb-0b0e-1bdc56a2de41
-# ╠═de9168de-810c-11eb-0064-cb0d9e164dbe
-# ╠═8093ec88-810d-11eb-24ab-bb36186ae7ac
+# ╠═7dfa2ab4-81b2-11eb-1f6a-29e4eeb4e60f
+# ╠═8d4120ae-81b2-11eb-0a23-45b509d1a40b
+# ╠═6b63f3e8-81b3-11eb-21e6-fde00c5dcc29
+# ╠═9f0d935c-81b3-11eb-02da-ff1cd1751b6b
+# ╠═fdebaabc-81b3-11eb-16c2-37a14a0f89c4
+# ╠═08e34eca-81b4-11eb-2de5-df2c13ab1bfb
+# ╠═1a6cec78-81b4-11eb-2434-f109162c84c3
+# ╠═7c5b9c86-81b4-11eb-0f18-652107f741b9
+# ╠═f4698102-81b4-11eb-1c34-41337fa84158
+# ╠═6c9273ba-81b4-11eb-12a1-53d45f118b65
+# ╠═a5ea598e-81b4-11eb-1da8-bbba07b26ded
 # ╠═34dbd85e-810e-11eb-02b3-e928e9bcbc7d
-# ╠═b6bdbe06-810d-11eb-0b03-f55f968e6602
-# ╠═ef4a7d68-810d-11eb-3f56-f93dd251f8c6
-# ╠═f2a279a4-810b-11eb-19c3-79e560d45b43
-# ╠═f23a685a-810b-11eb-186b-259e129ca440
+# ╠═aaeb3b64-81b5-11eb-3bd7-739827b62939
+# ╠═a6d336e6-81c2-11eb-218a-2b373e3dc240
+# ╠═5528de4c-81b6-11eb-1ba4-5d5b816f3804
+# ╠═d6a3c290-81c5-11eb-2317-cd6fc0faacc1
+# ╠═65cd8c2a-81b6-11eb-0a1d-cf523d856b8a
+# ╠═dfce3cb8-81c5-11eb-1828-237015b9ba82
+# ╠═8388b212-81b6-11eb-3cc2-116509bde9b9
+# ╠═e95e2cac-81c5-11eb-3e32-1becd6f6f29d
+# ╠═8c877e02-81b6-11eb-1a62-c97efbadf078
+# ╠═efd35b3e-81c5-11eb-02c8-d7cecaa7429a
+# ╠═9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
+# ╠═f93d9cb6-81c5-11eb-2b06-2b9b7bdf7c09
+# ╠═055402ba-81b7-11eb-37a6-59609d53d310
+# ╠═028f0e26-81b7-11eb-1bdb-1f93f33adbe3
+# ╠═63271808-81cd-11eb-283b-2fc579b4f9db
+# ╠═a3d0eb1e-81b8-11eb-3a93-973193b248ff
+# ╠═ae3b28c6-81b8-11eb-1c90-1fdccbc827b3
+# ╠═f46166ee-81b8-11eb-05be-a5d55e9dac2a
+# ╠═0173266a-81b9-11eb-1343-e5fa5cd85298
+# ╠═0c493566-81b9-11eb-00d1-afd586cb640f
+# ╠═10bd20ee-81b9-11eb-29cb-d77158637266
+# ╠═0a5888f2-81bd-11eb-2f3b-a504d4ae781f
+# ╠═18f8a626-81bd-11eb-371d-8b09229fdeae
+# ╠═3d35e698-81bd-11eb-3a99-0f4d644cc8ee
+# ╠═46d71620-81bf-11eb-3a55-af708b8bf3d0
+# ╠═c9d71a14-81bc-11eb-09d6-976ba1d71ee0
