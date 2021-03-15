@@ -4,10 +4,10 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 055402ba-81b7-11eb-37a6-59609d53d310
+# ╔═╡ 4968508c-859a-11eb-24d9-ade066fdd136
 using StructuresKit
 
-# ╔═╡ a3d0eb1e-81b8-11eb-3a93-973193b248ff
+# ╔═╡ 5c43cba4-85a5-11eb-0d4b-e3306ed3cbb0
 using Plots
 
 # ╔═╡ b1cd585c-8103-11eb-24c8-bfa388e7c514
@@ -456,7 +456,7 @@ graphplot!(g,
           color=:black,
           linewidth=1)
 	
-	quiver!(node_geometry[:,1],node_geometry[:,2],quiver=(external_forces[1:2:end]./10, external_forces[2:2:end]./10))
+	quiver!(node_geometry[:,1],node_geometry[:,2],quiver=(CASA.external_forces[1:2:end]./10, CASA.external_forces[2:2:end]./10))
 	
 end
 
@@ -476,6 +476,79 @@ end
 
 # ╔═╡ 46d71620-81bf-11eb-3a55-af708b8bf3d0
 g
+
+# ╔═╡ 80c15a46-85a0-11eb-21b1-279843cc2978
+line_weight = ones(num_nodes)*3
+
+# ╔═╡ fc89b1e6-85a0-11eb-256c-6fc163965faf
+axial_force = [ x[3] for x in CASA.f_element]
+
+# ╔═╡ 4e1dee06-85a8-11eb-3799-194980ccce1b
+axial_force
+
+# ╔═╡ 6f3abc6e-85a2-11eb-043b-cf3df249a404
+normalized_axial_force = axial_force ./ maximum(abs.(axial_force))
+
+# ╔═╡ a2da93be-85a2-11eb-2631-b3dee12a26e4
+function plot_axial_force(node_geometry, members, normalized_axial_force)
+
+	p = plot(node_geometry[:,1], node_geometry[:,2], seriestype = scatter, legend=false, size = (600,200))
+	
+	for i = 1:73
+	
+		node_i = members[i][1]
+		node_j = members[i][2]
+		
+		if normalized_axial_force[i] <= 0.0
+		
+			plot!(p, [node_geometry[node_i, 1], node_geometry[node_j, 1]], [node_geometry[node_i, 2], node_geometry[node_j, 2]], color = :blue, linewidth = abs(normalized_axial_force[i]), legend=false)
+			
+		else
+			
+			plot!(p, [node_geometry[node_i, 1], node_geometry[node_j, 1]], [node_geometry[node_i, 2], node_geometry[node_j, 2]], color = :red, linewidth = abs(normalized_axial_force[i]), legend=false)
+
+		end
+		
+	end
+	
+	return current()
+
+end
+	
+
+
+# ╔═╡ 9895be68-85a6-11eb-216e-73f313b179bb
+plot_axial_force(node_geometry, members, normalized_axial_force .* 5)
+
+# ╔═╡ 783f3652-859d-11eb-0a9b-6f49dc81a0ec
+md""" Calculate self weight of arch truss."""
+
+# ╔═╡ 890395d4-859d-11eb-14a9-ebdf7374fe97
+γ_concrete = 23563/1000^3 #N/mm^3
+
+# ╔═╡ 6f427bda-859e-11eb-1a85-f1a095e5fae3
+γ_steel = 77287/1000^3 #N/mm^3
+
+# ╔═╡ 86504064-859e-11eb-198a-6dff40c3a926
+W_top_chord = s_top_chord * A_top_chord * γ_concrete
+
+# ╔═╡ a12efb1e-859e-11eb-3238-fdbe298d58da
+W_bottom_chord = s_bottom_chord * A_bottom_chord * γ_concrete
+
+# ╔═╡ b1379282-859e-11eb-0e7c-85f9c946e610
+W_roof_shell = s_top_chord * 50 * trib_width/2 * γ_concrete + s_bottom_chord * 50 * trib_width/2 * γ_concrete
+
+# ╔═╡ 20cbffc0-859f-11eb-21aa-c1f9e40a5bc4
+s_diagonals = sum(CASA.L[(num_bottom_chord_elements+num_top_chord_elements+1):end])
+
+# ╔═╡ 7a0151c6-859f-11eb-0b36-73cc5b5f8962
+W_steel_diagonals = s_diagonals * A_diagonal * γ_steel
+
+# ╔═╡ 902cbe0e-859f-11eb-1421-df0d95e2e39e
+W_total = W_top_chord + W_bottom_chord + W_roof_shell + W_steel_diagonals
+
+# ╔═╡ cbd910ce-85b3-11eb-1439-9d05fae9cc4a
+w_self_weight = W_total/L_top_chord
 
 # ╔═╡ Cell order:
 # ╠═b1cd585c-8103-11eb-24c8-bfa388e7c514
@@ -551,10 +624,9 @@ g
 # ╠═efd35b3e-81c5-11eb-02c8-d7cecaa7429a
 # ╠═9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
 # ╠═f93d9cb6-81c5-11eb-2b06-2b9b7bdf7c09
-# ╠═055402ba-81b7-11eb-37a6-59609d53d310
+# ╠═4968508c-859a-11eb-24d9-ade066fdd136
 # ╠═028f0e26-81b7-11eb-1bdb-1f93f33adbe3
 # ╠═63271808-81cd-11eb-283b-2fc579b4f9db
-# ╠═a3d0eb1e-81b8-11eb-3a93-973193b248ff
 # ╠═ae3b28c6-81b8-11eb-1c90-1fdccbc827b3
 # ╠═f46166ee-81b8-11eb-05be-a5d55e9dac2a
 # ╠═0173266a-81b9-11eb-1343-e5fa5cd85298
@@ -565,3 +637,20 @@ g
 # ╠═3d35e698-81bd-11eb-3a99-0f4d644cc8ee
 # ╠═46d71620-81bf-11eb-3a55-af708b8bf3d0
 # ╠═c9d71a14-81bc-11eb-09d6-976ba1d71ee0
+# ╠═80c15a46-85a0-11eb-21b1-279843cc2978
+# ╠═fc89b1e6-85a0-11eb-256c-6fc163965faf
+# ╠═4e1dee06-85a8-11eb-3799-194980ccce1b
+# ╠═6f3abc6e-85a2-11eb-043b-cf3df249a404
+# ╠═5c43cba4-85a5-11eb-0d4b-e3306ed3cbb0
+# ╠═a2da93be-85a2-11eb-2631-b3dee12a26e4
+# ╠═9895be68-85a6-11eb-216e-73f313b179bb
+# ╠═783f3652-859d-11eb-0a9b-6f49dc81a0ec
+# ╠═890395d4-859d-11eb-14a9-ebdf7374fe97
+# ╠═6f427bda-859e-11eb-1a85-f1a095e5fae3
+# ╠═86504064-859e-11eb-198a-6dff40c3a926
+# ╠═a12efb1e-859e-11eb-3238-fdbe298d58da
+# ╠═b1379282-859e-11eb-0e7c-85f9c946e610
+# ╠═20cbffc0-859f-11eb-21aa-c1f9e40a5bc4
+# ╠═7a0151c6-859f-11eb-0b36-73cc5b5f8962
+# ╠═902cbe0e-859f-11eb-1421-df0d95e2e39e
+# ╠═cbd910ce-85b3-11eb-1439-9d05fae9cc4a
