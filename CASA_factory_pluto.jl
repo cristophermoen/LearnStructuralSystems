@@ -368,38 +368,20 @@ external_forces = zeros(Float64, num_nodes * 2)
 # ╔═╡ aaeb3b64-81b5-11eb-3bd7-739827b62939
 external_forces[(windward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[windward_node_index]
 
-# ╔═╡ a6d336e6-81c2-11eb-218a-2b373e3dc240
-external_forces
-
 # ╔═╡ 5528de4c-81b6-11eb-1ba4-5d5b816f3804
 external_forces[(windward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[windward_node_index]
-
-# ╔═╡ d6a3c290-81c5-11eb-2317-cd6fc0faacc1
-external_forces
 
 # ╔═╡ 65cd8c2a-81b6-11eb-0a1d-cf523d856b8a
 external_forces[(center_node_range .- 1) .* 2 .+ 1] .= P_wind_x[center_node_index]
 
-# ╔═╡ dfce3cb8-81c5-11eb-1828-237015b9ba82
-external_forces
-
 # ╔═╡ 8388b212-81b6-11eb-3cc2-116509bde9b9
 external_forces[(center_node_range .- 1) .* 2 .+ 2] .= P_wind_y[center_node_index]
-
-# ╔═╡ e95e2cac-81c5-11eb-3e32-1becd6f6f29d
-external_forces
 
 # ╔═╡ 8c877e02-81b6-11eb-1a62-c97efbadf078
 external_forces[(leeward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[leeward_node_index]
 
-# ╔═╡ efd35b3e-81c5-11eb-02c8-d7cecaa7429a
-external_forces
-
 # ╔═╡ 9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
 external_forces[(leeward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[leeward_node_index]
-
-# ╔═╡ f93d9cb6-81c5-11eb-2b06-2b9b7bdf7c09
-external_forces
 
 # ╔═╡ 028f0e26-81b7-11eb-1bdb-1f93f33adbe3
 begin
@@ -494,7 +476,7 @@ function plot_axial_force(node_geometry, members, normalized_axial_force)
 
 	p = plot(node_geometry[:,1], node_geometry[:,2], seriestype = scatter, legend=false, size = (600,200))
 	
-	for i = 1:73
+	for i = 1:size(members)[1]
 	
 		node_i = members[i][1]
 		node_j = members[i][2]
@@ -613,17 +595,11 @@ w_self_weight = W_total/L_top_chord
 # ╠═a5ea598e-81b4-11eb-1da8-bbba07b26ded
 # ╠═34dbd85e-810e-11eb-02b3-e928e9bcbc7d
 # ╠═aaeb3b64-81b5-11eb-3bd7-739827b62939
-# ╠═a6d336e6-81c2-11eb-218a-2b373e3dc240
 # ╠═5528de4c-81b6-11eb-1ba4-5d5b816f3804
-# ╠═d6a3c290-81c5-11eb-2317-cd6fc0faacc1
 # ╠═65cd8c2a-81b6-11eb-0a1d-cf523d856b8a
-# ╠═dfce3cb8-81c5-11eb-1828-237015b9ba82
 # ╠═8388b212-81b6-11eb-3cc2-116509bde9b9
-# ╠═e95e2cac-81c5-11eb-3e32-1becd6f6f29d
 # ╠═8c877e02-81b6-11eb-1a62-c97efbadf078
-# ╠═efd35b3e-81c5-11eb-02c8-d7cecaa7429a
 # ╠═9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
-# ╠═f93d9cb6-81c5-11eb-2b06-2b9b7bdf7c09
 # ╠═4968508c-859a-11eb-24d9-ade066fdd136
 # ╠═028f0e26-81b7-11eb-1bdb-1f93f33adbe3
 # ╠═63271808-81cd-11eb-283b-2fc579b4f9db
