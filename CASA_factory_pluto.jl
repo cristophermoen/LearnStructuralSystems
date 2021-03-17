@@ -353,9 +353,6 @@ not_used, dy_dx_top_chord_nodes = parabola(h_top_chord, L_top_chord, x_top_chord
 # ╔═╡ 7c5b9c86-81b4-11eb-0f18-652107f741b9
 top_chord_angle = atan.(dy_dx_top_chord_nodes)
 
-# ╔═╡ f4698102-81b4-11eb-1c34-41337fa84158
-rad2deg.(top_chord_angle)
-
 # ╔═╡ 6c9273ba-81b4-11eb-12a1-53d45f118b65
 P_wind_x = P_wind .* cos.(π/2 .- top_chord_angle)
 
@@ -367,6 +364,9 @@ external_forces = zeros(Float64, num_nodes * 2)
 
 # ╔═╡ aaeb3b64-81b5-11eb-3bd7-739827b62939
 external_forces[(windward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[windward_node_index]
+
+# ╔═╡ f79e4adc-8732-11eb-3dc1-735634b7879e
+external_forces
 
 # ╔═╡ 5528de4c-81b6-11eb-1ba4-5d5b816f3804
 external_forces[(windward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[windward_node_index]
@@ -383,6 +383,9 @@ external_forces[(leeward_node_range .- 1) .* 2 .+ 1] .= P_wind_x[leeward_node_in
 # ╔═╡ 9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
 external_forces[(leeward_node_range .- 1) .* 2 .+ 2] .= P_wind_y[leeward_node_index]
 
+# ╔═╡ cf2d7d30-8731-11eb-1498-4967ea7caa67
+external_forces
+
 # ╔═╡ 028f0e26-81b7-11eb-1bdb-1f93f33adbe3
 begin
 CASA = Truss.define(members, section_properties, material_properties, node_geometry, supports, external_forces)
@@ -391,8 +394,50 @@ CASA = Truss.solve(CASA)
 	
 end
 
-# ╔═╡ 63271808-81cd-11eb-283b-2fc579b4f9db
-CASA.external_forces
+# ╔═╡ 50ac3eb4-872f-11eb-35eb-571cf2a42cc5
+function plot_truss(truss_object, node_geometry, members, scale_x, scale_y)
+	
+	
+	δx = truss_object.u[1:2:end]
+	δy = truss_object.u[2:2:end]
+	
+	num_nodes = floor(Int, length(truss_object.u)/2)
+	
+	g = zeros(Int64, (num_nodes, num_nodes))
+	
+	start_nodes = [x[1] for x in members]
+	end_nodes = [x[2] for x in members]
+
+	for i = 1:num_nodes
+	
+		index = findall(x->x==i, start_nodes)
+	
+		g[i, end_nodes[index]] .= 1
+	
+	end
+	
+	graphplot(g,
+          x=node_geometry[:,1], y=node_geometry[:,2],
+          nodeshape=:circle, nodesize=2,
+          axis_buffer=0.01,
+          curves=false,
+          color=:red,
+          linewidth=1)
+	
+	graphplot!(g,
+          x=node_geometry[:,1] .+ δx .* scale_x, y=node_geometry[:,2] .+ δy .* 	scale_y,
+          nodeshape=:circle, nodesize=2,
+          axis_buffer=0.01,
+          curves=false,
+          color=:black,
+          linewidth=1)
+	
+	quiver!(node_geometry[:,1],node_geometry[:,2],quiver=(truss_object.external_forces[1:2:end]./10, truss_object.external_forces[2:2:end]./10))
+	
+	return current()
+	
+end
+	
 
 # ╔═╡ ae3b28c6-81b8-11eb-1c90-1fdccbc827b3
 δx = CASA.u[1:2:end]
@@ -405,12 +450,6 @@ scale_x = 200.0
 
 # ╔═╡ 0c493566-81b9-11eb-00d1-afd586cb640f
 scale_y = 200.0
-
-# ╔═╡ 10bd20ee-81b9-11eb-29cb-d77158637266
-# begin
-# plot(node_geometry[:,1], node_geometry[:,2], seriestype = :scatter, legend = false, size=(600,600), xlims = (-3000, L_bottom_chord + 3000), ylims = (-3000, L_bottom_chord + 3000))
-# plot!(node_geometry[:,1] .+ δx .* scale_x, node_geometry[:,2] .+ δy .* scale_y, seriestype = :scatter, legend = false)
-# end
 
 # ╔═╡ 0a5888f2-81bd-11eb-2f3b-a504d4ae781f
 #Define graph of arch elements and nodes.
@@ -472,7 +511,11 @@ axial_force
 normalized_axial_force = axial_force ./ maximum(abs.(axial_force))
 
 # ╔═╡ a2da93be-85a2-11eb-2631-b3dee12a26e4
-function plot_axial_force(node_geometry, members, normalized_axial_force)
+function plot_axial_force(truss_object, node_geometry, members, scale)
+	
+	axial_force = [ x[3] for x in truss_object.f_element]
+	
+	normalized_axial_force = axial_force ./ maximum(abs.(axial_force)) .* scale
 
 	p = plot(node_geometry[:,1], node_geometry[:,2], seriestype = scatter, legend=false, size = (600,200))
 	
@@ -500,7 +543,7 @@ end
 
 
 # ╔═╡ 9895be68-85a6-11eb-216e-73f313b179bb
-plot_axial_force(node_geometry, members, normalized_axial_force .* 5)
+plot_axial_force(CASA, node_geometry, members, 5)
 
 # ╔═╡ 783f3652-859d-11eb-0a9b-6f49dc81a0ec
 md""" Calculate self weight of arch truss."""
@@ -531,6 +574,85 @@ W_total = W_top_chord + W_bottom_chord + W_roof_shell + W_steel_diagonals
 
 # ╔═╡ cbd910ce-85b3-11eb-1439-9d05fae9cc4a
 w_self_weight = W_total/L_top_chord
+
+# ╔═╡ 448727ec-872e-11eb-1caa-b9798941be52
+P_self_weight = W_total/(num_bottom_chord_nodes + num_top_chord_nodes) #N
+
+# ╔═╡ 7d4579e4-872e-11eb-3aac-8986c0e056e9
+external_forces_self_weight = zeros(Float64, num_nodes * 2)
+
+# ╔═╡ ac1fa276-872e-11eb-29f2-33da90c45532
+external_forces_self_weight[2:2:end] .= -P_self_weight   #note negative sign, for gravity
+
+# ╔═╡ 3f421abe-8736-11eb-27e8-a9cced210440
+external_forces_self_weight
+
+# ╔═╡ e8657170-872e-11eb-11cb-dd39b183a73f
+begin
+CASA_self_weight = Truss.define(members, section_properties, material_properties, node_geometry, supports, external_forces_self_weight)
+	
+CASA_self_weight = Truss.solve(CASA_self_weight)
+	
+end
+
+# ╔═╡ 568570e0-8736-11eb-3d1b-f309605350f1
+CASA_self_weight.external_forces
+
+# ╔═╡ 299a42fa-8730-11eb-3fb9-d3300ea99fc1
+plot_truss(CASA_self_weight, node_geometry, members, 1000.0, 1000.0)
+
+# ╔═╡ 9f6e3540-8730-11eb-3420-57d6b0fc2d87
+maximum(abs.(CASA_self_weight.u[2:2:end]))
+
+# ╔═╡ 7208e75c-8731-11eb-3f5a-53081c021f1d
+plot_axial_force(CASA_self_weight, node_geometry, members, 5)
+
+# ╔═╡ 98005832-8731-11eb-1fe0-f9cbcc04a0dd
+md"""DL+W"""
+
+# ╔═╡ a574199a-8731-11eb-28db-6d29a9d03c11
+begin
+	external_forces_DL_W = zeros(Float64, num_nodes * 2)
+	external_forces_DL_W = CASA.external_forces .+ CASA_self_weight.external_forces
+end
+
+# ╔═╡ f4a38132-8735-11eb-036c-29088205f4ff
+
+
+# ╔═╡ d17694ec-8735-11eb-06d4-179dc79b6ff6
+CASA.external_forces
+
+# ╔═╡ d7e504bc-8735-11eb-1ba6-d5ae58dbeb2d
+CASA_self_weight.external_forces
+
+# ╔═╡ 652653e8-8735-11eb-0fa9-09f380360819
+begin
+CASA_DL_W = Truss.define(members, section_properties, material_properties, node_geometry, supports, external_forces_DL_W)
+	
+CASA_DL_W = Truss.solve(CASA_DL_W)
+	
+end
+
+# ╔═╡ 75da8206-8735-11eb-142b-653d35df9e2d
+plot_truss(CASA_DL_W, node_geometry, members, 200.0, 200.0)
+
+# ╔═╡ 71bbca34-8737-11eb-0a01-c3f03351bb58
+plot_axial_force(CASA_DL_W, node_geometry, members, 5)
+
+# ╔═╡ 93bd5ae8-8738-11eb-159f-bd9cd82796a3
+axial_forces_DL_W = [x[3] for x in CASA_DL_W.f_element]
+
+# ╔═╡ ed445f58-8738-11eb-1f69-3390a0af3cc4
+axial_forces_DL_W[1:37]
+
+# ╔═╡ c83ce05e-8738-11eb-3cf7-5f07f7c7c242
+max_bottom_chord_tension = maximum(axial_forces_DL_W[1:37])
+
+# ╔═╡ 29b8a5fc-8739-11eb-1169-b5e8ce061630
+max_bottom_chord_tensile_stress = max_bottom_chord_tension / A_bottom_chord
+
+# ╔═╡ 6139b6f6-8739-11eb-14f3-bb79f9d4f149
+A_bottom_chord
 
 # ╔═╡ Cell order:
 # ╠═b1cd585c-8103-11eb-24c8-bfa388e7c514
@@ -590,24 +712,24 @@ w_self_weight = W_total/L_top_chord
 # ╠═08e34eca-81b4-11eb-2de5-df2c13ab1bfb
 # ╠═1a6cec78-81b4-11eb-2434-f109162c84c3
 # ╠═7c5b9c86-81b4-11eb-0f18-652107f741b9
-# ╠═f4698102-81b4-11eb-1c34-41337fa84158
 # ╠═6c9273ba-81b4-11eb-12a1-53d45f118b65
 # ╠═a5ea598e-81b4-11eb-1da8-bbba07b26ded
 # ╠═34dbd85e-810e-11eb-02b3-e928e9bcbc7d
 # ╠═aaeb3b64-81b5-11eb-3bd7-739827b62939
+# ╠═f79e4adc-8732-11eb-3dc1-735634b7879e
 # ╠═5528de4c-81b6-11eb-1ba4-5d5b816f3804
 # ╠═65cd8c2a-81b6-11eb-0a1d-cf523d856b8a
 # ╠═8388b212-81b6-11eb-3cc2-116509bde9b9
 # ╠═8c877e02-81b6-11eb-1a62-c97efbadf078
 # ╠═9b69ad5a-81b6-11eb-373c-192e0a6cf9d2
+# ╠═cf2d7d30-8731-11eb-1498-4967ea7caa67
 # ╠═4968508c-859a-11eb-24d9-ade066fdd136
 # ╠═028f0e26-81b7-11eb-1bdb-1f93f33adbe3
-# ╠═63271808-81cd-11eb-283b-2fc579b4f9db
+# ╠═50ac3eb4-872f-11eb-35eb-571cf2a42cc5
 # ╠═ae3b28c6-81b8-11eb-1c90-1fdccbc827b3
 # ╠═f46166ee-81b8-11eb-05be-a5d55e9dac2a
 # ╠═0173266a-81b9-11eb-1343-e5fa5cd85298
 # ╠═0c493566-81b9-11eb-00d1-afd586cb640f
-# ╠═10bd20ee-81b9-11eb-29cb-d77158637266
 # ╠═0a5888f2-81bd-11eb-2f3b-a504d4ae781f
 # ╠═18f8a626-81bd-11eb-371d-8b09229fdeae
 # ╠═3d35e698-81bd-11eb-3a99-0f4d644cc8ee
@@ -630,3 +752,25 @@ w_self_weight = W_total/L_top_chord
 # ╠═7a0151c6-859f-11eb-0b36-73cc5b5f8962
 # ╠═902cbe0e-859f-11eb-1421-df0d95e2e39e
 # ╠═cbd910ce-85b3-11eb-1439-9d05fae9cc4a
+# ╠═448727ec-872e-11eb-1caa-b9798941be52
+# ╠═7d4579e4-872e-11eb-3aac-8986c0e056e9
+# ╠═ac1fa276-872e-11eb-29f2-33da90c45532
+# ╠═3f421abe-8736-11eb-27e8-a9cced210440
+# ╠═e8657170-872e-11eb-11cb-dd39b183a73f
+# ╠═568570e0-8736-11eb-3d1b-f309605350f1
+# ╠═299a42fa-8730-11eb-3fb9-d3300ea99fc1
+# ╠═9f6e3540-8730-11eb-3420-57d6b0fc2d87
+# ╠═7208e75c-8731-11eb-3f5a-53081c021f1d
+# ╠═98005832-8731-11eb-1fe0-f9cbcc04a0dd
+# ╠═a574199a-8731-11eb-28db-6d29a9d03c11
+# ╠═f4a38132-8735-11eb-036c-29088205f4ff
+# ╠═d17694ec-8735-11eb-06d4-179dc79b6ff6
+# ╠═d7e504bc-8735-11eb-1ba6-d5ae58dbeb2d
+# ╠═652653e8-8735-11eb-0fa9-09f380360819
+# ╠═75da8206-8735-11eb-142b-653d35df9e2d
+# ╠═71bbca34-8737-11eb-0a01-c3f03351bb58
+# ╠═93bd5ae8-8738-11eb-159f-bd9cd82796a3
+# ╠═ed445f58-8738-11eb-1f69-3390a0af3cc4
+# ╠═c83ce05e-8738-11eb-3cf7-5f07f7c7c242
+# ╠═29b8a5fc-8739-11eb-1169-b5e8ce061630
+# ╠═6139b6f6-8739-11eb-14f3-bb79f9d4f149
