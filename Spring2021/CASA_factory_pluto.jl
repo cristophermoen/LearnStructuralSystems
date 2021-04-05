@@ -129,6 +129,9 @@ end
 # ╔═╡ af780a64-8105-11eb-1ec4-3118052de520
 x_bottom_chord, y_bottom_chord = calculate_arch_xy(bottom_chord_arch_layout, h_bottom_chord, L_bottom_chord)
 
+# ╔═╡ 8667d84a-87f4-11eb-3bd8-fb737afaee2c
+x_bottom_chord
+
 # ╔═╡ 6e8ab964-8107-11eb-1c57-01a7a1fd710a
 # DISCRETIZE TOP ARCH CHORD
 begin 
@@ -160,6 +163,9 @@ x_top_chord = x_top_chord .- delta_x_bottom_to_top_chord
 #Shift the top chord y-coordinates.
 y_top_chord = y_top_chord .+ delta_y_bottom_to_top_chord 
 end
+
+# ╔═╡ a3df5728-87f6-11eb-2cb1-7de84c9ae6aa
+x_top_chord
 
 # ╔═╡ 4fe85858-8108-11eb-2927-734257192557
 begin
@@ -671,10 +677,12 @@ A_bottom_chord
 # ╠═87e8b846-8104-11eb-1038-894f04a0727e
 # ╠═a4f4fc56-8104-11eb-17c1-4756a521364b
 # ╠═af780a64-8105-11eb-1ec4-3118052de520
+# ╠═8667d84a-87f4-11eb-3bd8-fb737afaee2c
 # ╠═6e8ab964-8107-11eb-1c57-01a7a1fd710a
 # ╠═b0b7559c-8107-11eb-1669-3946daddfb7d
 # ╠═b75e4dd6-8107-11eb-229a-d721ae3f3674
 # ╠═be32003a-8107-11eb-1e0d-c9c96c1b75e1
+# ╠═a3df5728-87f6-11eb-2cb1-7de84c9ae6aa
 # ╠═4fe85858-8108-11eb-2927-734257192557
 # ╠═94915568-8108-11eb-0ba2-8b316afb9495
 # ╠═b0645880-8108-11eb-30a2-8997109ff992
