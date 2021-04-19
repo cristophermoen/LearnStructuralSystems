@@ -204,13 +204,13 @@ DC_tensile_rupture = Q ./ R_tensile_rupture
 DC_compression = Q ./ R_compression
 
 # ╔═╡ 20a8d148-d433-46d4-94c7-1368dfa40a50
-DC_min = maximum([DC_tensile_yielding DC_tensile_rupture DC_compression], dims=2)
+DC_max = maximum([DC_tensile_yielding DC_tensile_rupture DC_compression], dims=2)
 
 # ╔═╡ 42f8e7c6-0ee5-4536-8deb-ae82e3210681
 md""" ## Calculate system probability of failure."""
 
 # ╔═╡ 41cd0099-2390-48a1-9876-36c78936c199
-failures = findall(x->x>=1.0, DC_min)
+failures = findall(x->x>=1.0, DC_max)
 
 # ╔═╡ b600eb9c-10fb-4548-9604-0ebaf735ddd5
 num_failures = length(failures)
