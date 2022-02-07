@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.20
+# v0.17.4
 
 using Markdown
 using InteractiveUtils
@@ -16,6 +16,15 @@ Spring 2021
 
 # ╔═╡ ebc991e0-6661-11eb-00c8-1747883147cb
 md""" In this notebook we start playing with the stiffness method on the braced frame for Caribbean Town. Our goal is to calculate deflections and internal forces. We are idealizing the frame as a two bar truss system."""
+
+# ╔═╡ 7e72b4d7-dea8-4640-baf4-eb6685a6b4da
+Y=2+2
+
+# ╔═╡ 5cd50c2f-e7cb-4ceb-a87e-36f507bb1af3
+md" # Important"
+
+# ╔═╡ 397ccadf-a9c9-4f92-847b-16dad3bb5925
+TableOfContents()
 
 # ╔═╡ 35818d78-6a41-11eb-23a3-71ebb88b7af5
 md""" Units are in mm and N."""
@@ -303,9 +312,48 @@ u_local_e1 = T_1 * u_global_e1
 # ╔═╡ 06c94c9a-6bb9-11eb-2d49-010baf4e0622
 f_local_e1 = k_local_1 * u_local_e1
 
+# ╔═╡ 00000000-0000-0000-0000-000000000001
+PLUTO_PROJECT_TOML_CONTENTS = """
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+"""
+
+# ╔═╡ 00000000-0000-0000-0000-000000000002
+PLUTO_MANIFEST_TOML_CONTENTS = """
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.7.1"
+manifest_format = "2.0"
+
+[[deps.Artifacts]]
+uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+
+[[deps.CompilerSupportLibraries_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
+[[deps.Libdl]]
+uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+
+[[deps.LinearAlgebra]]
+deps = ["Libdl", "libblastrampoline_jll"]
+uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[[deps.OpenBLAS_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
+uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
+
+[[deps.libblastrampoline_jll]]
+deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
+"""
+
 # ╔═╡ Cell order:
 # ╟─8904b762-64ac-11eb-30d0-a7cc5cf93812
 # ╠═ebc991e0-6661-11eb-00c8-1747883147cb
+# ╠═7e72b4d7-dea8-4640-baf4-eb6685a6b4da
+# ╠═5cd50c2f-e7cb-4ceb-a87e-36f507bb1af3
+# ╠═397ccadf-a9c9-4f92-847b-16dad3bb5925
 # ╟─35818d78-6a41-11eb-23a3-71ebb88b7af5
 # ╟─84a1e98c-6653-11eb-06b8-3daf7a963bba
 # ╠═ea4e82a4-64ad-11eb-05f9-0dcb561d1268
@@ -382,3 +430,5 @@ f_local_e1 = k_local_1 * u_local_e1
 # ╠═831d4adc-6bb7-11eb-069a-2f51cbf327cf
 # ╠═9eb8df04-6bb7-11eb-2a33-6f9324c55428
 # ╠═06c94c9a-6bb9-11eb-2d49-010baf4e0622
+# ╟─00000000-0000-0000-0000-000000000001
+# ╟─00000000-0000-0000-0000-000000000002
