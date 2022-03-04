@@ -24,7 +24,7 @@ Y=2+2
 md" # Important"
 
 # ╔═╡ 397ccadf-a9c9-4f92-847b-16dad3bb5925
-TableOfContents()
+
 
 # ╔═╡ 35818d78-6a41-11eb-23a3-71ebb88b7af5
 md""" Units are in mm and N."""
