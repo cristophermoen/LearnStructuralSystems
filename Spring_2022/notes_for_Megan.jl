@@ -73,3 +73,5 @@ for i=1:num_top_chord_elements
     element_angle[i] = atan(element_vector[1], element_vector[2]) #radians
 
 end
+
+
