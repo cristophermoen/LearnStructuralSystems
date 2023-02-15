@@ -4,7 +4,7 @@
 
 using LinearAlgebra
 
-#Calculate the deformation of a 2D truss element.
+#Calculate the deformation of a 2D joist truss cell.
 
 #Define section properties.
 A = [0.32, 0.877]
