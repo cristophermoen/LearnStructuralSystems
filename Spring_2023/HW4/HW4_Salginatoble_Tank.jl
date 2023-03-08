@@ -4,7 +4,7 @@
 
 using LinearAlgebra
 
-#Calculate displacements and internal forces in the Salginatoble bridge.
+#Calculate displacements and internal forces for the Salginatoble bridge.
 
 #Define section properties.
 A = [0.32, 0.877, 0.877, 0.877, 0.877, 0.877, 0.877]  #mm^2
