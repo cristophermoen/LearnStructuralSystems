@@ -207,9 +207,11 @@ println(δ)
 P = [k_local[i] * δ[i] for i in eachindex(k_local)]
 
 
-axial_force = [P[i][4] for i in eachindex(P)]
+axial_force = [-P[1][1]; [P[i][4] for i in eachindex(P)]]
 
 moment = [0.0; [P[i][6] for i in eachindex(P)]]
+
+shear = [-P[1][2]; [P[i][5] for i in eachindex(P)]]
 
 using Plots
 
