@@ -2,7 +2,7 @@
 #Lecture 15
 #March 2023
 
-#Calculate the probability of failure of the Salginatoble bridge.
+#Calculate the probability of failure of the Salginatobel bridge.
 
 using LinearAlgebra, Distributions
 

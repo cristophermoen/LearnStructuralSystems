@@ -17,7 +17,7 @@ h = [0.75/2, 1.125/2, 2.625/2, 4.5/2, 3.75/2, 1.875/2, 1/2]
 E = [27579029.17] #kPa #(Converted from ~4000 ksi)
 
 #Define nodal coordinates.
-node_coordinates = [[0.0, -12.0], [6.0, -9.0], [12.0, -6.0], [18.0, -4.0], [24.0, -2.5], [30.0, -1.0], [36.0, -0.3], [42.0, 0.0]] #m
+node_coordinates = [[0.0, -12.0], [6.0, -9.0], [12.0, -6.0], [18.0, -4.0], [24.0, -2.5], [30.0, -1.0], [36.0, -0.75], [42.0, 0.0]] #m
 
 #Define element connectivity.
 element_connectivity = [(1, 2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,8)]
@@ -243,8 +243,8 @@ axial_force = [-P[1][1]; [P[i][4] for i in eachindex(P)]]
 
 moment = [0.0; [P[i][6] for i in eachindex(P)]]
 
-shear = [-P[1][2]; [P[i][5] for i in eachindex(P)]]
-
+shear = [0.0; [P[i][5] for i in eachindex(P)]]
+shear[end] = 0.0
 
 A_node = [0.3496, 0.6992, 0.874, 2.7968, 3.496, 1.748, 0.874, 0.5244]
 
@@ -252,11 +252,12 @@ I_node = [0.027, 0.189, 0.335, 5.955, 10.395, 1.871, 0.335, 0.087]
 
 depth_node = [0.25, 0.5, 1.25/2, 2.0, 2.5, 1.25, 1.25/2, 0.75/2] * 2
 
+
 axial_stress = [fill(axial_force[i] ./ A_node[i], 3) for i in eachindex(axial_force)]
 
 flexural_stress = [[-moment[i]*depth_node[i]/2/I_node[i], 0.0, moment[i]*depth_node[i]/2/I_node[i]] for i in eachindex(moment)]
 
-shear_stress = [[0.0, 3/2*shear[i]/A_node[i], 0.0] for i in eachindex(moment)]
+shear_stress = [[0.0, -3/2*shear[i]/A_node[i], 0.0] for i in eachindex(moment)]
 
 #Find Stress Tensor
 function create_stress_tensor(σ_axial, σ_flexural, τ)
@@ -287,10 +288,93 @@ for i in eachindex(T)
 end
 
 
-kN/m^2
 
-kPa
+using CairoMakie, Statistics
 
-MPa   -4.3 #MPa
+f = Figure()
+ax = Axis(f[1, 1])
+f
 
-0.85 * 27
+
+#define local x-axis angle at each node
+θ_node = [θ[1]; [mean([θ[i], θ[i+1]]) for i = 1:length(θ)-1]; θ[7]]
+β_node = [define_rotation_matrix(θ_node[i]) for i in eachindex(θ_node)]
+
+
+x_c = [node_coordinates[i][1] for i in eachindex(node_coordinates)]
+y_c = [node_coordinates[i][2] for i in eachindex(node_coordinates)]
+# lines!(x_c, y_c, color=:grey)
+f
+
+xy_top = [β_node[i][1:2, 1:2]' * [0.0, 1.0] * depth_node[i]/2 for i in eachindex(depth_node)] 
+x_top = [xy_top[i][1] for i in eachindex(node_coordinates)] .+ x_c
+y_top = [xy_top[i][2] for i in eachindex(node_coordinates)] .+ y_c
+lines!(x_top, y_top, color=:grey)
+f
+
+xy_bottom = [β_node[i][1:2, 1:2]' * [0.0, -1.0] * depth_node[i]/2 for i in eachindex(depth_node)] 
+x_bottom = [xy_bottom[i][1] for i in eachindex(node_coordinates)] .+ x_c
+y_bottom = [xy_bottom[i][2] for i in eachindex(node_coordinates)] .+ y_c
+lines!(x_bottom, y_bottom, color=:grey)
+f
+
+ax.aspect = abs(maximum(x_c) - minimum(x_c))/abs(maximum(y_c) - minimum(y_c))
+f
+
+uv_comp = [β_node[j][1:2, 1:2]' * principal_stress_directions[j][i][:, 1] * principal_stresses[j][i][1] for i=1:3, j=1:length(depth_node)]
+
+
+scale = 1/2000
+#top 
+u_comp = [uv_comp[1, i][1] for i in eachindex(depth_node)]
+v_comp = [uv_comp[1, i][2] for i in eachindex(depth_node)]
+arrows!(x_top, y_top, u_comp*scale, v_comp*scale, color=:blue)
+
+#mid
+u_comp = [uv_comp[2, i][1] for i in eachindex(depth_node)]
+v_comp = [uv_comp[2, i][2] for i in eachindex(depth_node)]
+arrows!(x_c, y_c, u_comp*scale, v_comp*scale, color=:blue)
+
+#bottom
+u_comp = [uv_comp[3, i][1] for i in eachindex(depth_node)]
+v_comp = [uv_comp[3, i][2] for i in eachindex(depth_node)]
+arrows!(x_bottom, y_bottom, u_comp*scale, v_comp*scale, color=:blue)
+
+
+uv_tension = [β_node[j][1:2, 1:2]' * principal_stress_directions[j][i][:, 2] * principal_stresses[j][i][2] for i=1:3, j=1:length(depth_node)]
+
+#top
+u_tension = [uv_tension[1, i][1] for i in eachindex(depth_node)]
+v_tension = [uv_tension[1, i][2] for i in eachindex(depth_node)]
+
+for i in eachindex(u_tension)
+
+    if (u_tension[i]!=0.0) 
+        arrows!([x_top[i]], [y_top[i]], [u_tension[i]]*scale, [v_tension[i]]*scale, color=:red)
+    end
+
+end
+
+#mid
+u_tension = [uv_tension[2, i][1] for i in eachindex(depth_node)]
+v_tension = [uv_tension[2, i][2] for i in eachindex(depth_node)]
+for i in eachindex(u_tension)
+
+    if (u_tension[i]!=0.0) 
+        arrows!([x_c[i]], [y_c[i]], [u_tension[i]]*scale, [v_tension[i]]*scale, color=:red)
+    end
+
+end
+
+
+#bottom
+u_tension = [uv_tension[3, i][1] for i in eachindex(depth_node)]
+v_tension = [uv_tension[3, i][2] for i in eachindex(depth_node)]
+for i in eachindex(u_tension)
+
+    if (u_tension[i]!=0.0) 
+        arrows!([x_bottom[i]], [y_bottom[i]], [u_tension[i]]*scale, [v_tension[i]]*scale, color=:red)
+    end
+
+end
+f
