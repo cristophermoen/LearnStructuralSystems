@@ -6,7 +6,7 @@
 
 using LinearAlgebra, Distributions
 
-num_samples = 100000000
+num_samples = 10000000
 
 
 #define random variables
@@ -82,4 +82,53 @@ end
 
 w = get_failure_count(Pn, Pu, num_samples)
 
-probability_of_failure = (w / num_samples) * 100
+probability_of_failure = (w / num_samples) 
+
+
+#HW problem 2
+
+function check_building_collapse(f_y, f_DL, f_LL)
+
+    num_samples = 12
+    Pn = solve_Pn(f_y, num_samples)
+    Pu = solve_Pu(f_DL, f_LL, num_samples)
+
+    column_failure = Pn .< Pu
+
+    column_number_at_failure = findall(flag->flag==1, column_failure)
+
+    if !isempty(column_number_at_failure)
+
+        Pu[column_number_at_failure-1] += Pu[column_number_at_failure]/2
+        Pu[column_number_at_failure+1] += Pu[column_number_at_failure]/2
+
+        if Pu[column_number_at_failure-1] >  Pn[column_number_at_failure-1]
+
+            building_failure = "yes"
+
+        elseif Pu[column_number_at_failure+1] >  Pn[column_number_at_failure+1]
+
+            building_failure = "yes"
+
+        end
+
+    else
+
+        building_failure = "no"
+
+    end
+
+    return building_failure
+
+end
+
+
+building_failure_check = []
+for i =1:num_samples
+    building_failure_check = push!(building_failure_check, check_building_collapse(f_y, f_DL, f_LL))
+end
+
+building_failure_number = length(findall(check->check=="yes", building_failure_check))
+
+probability_of_building_failure = (building_failure_number / num_samples)
+
