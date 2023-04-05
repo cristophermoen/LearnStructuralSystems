@@ -122,13 +122,20 @@ function check_building_collapse(f_y, f_DL, f_LL)
 
 end
 
+function calculate_building_failure_probability(f_y, f_DL, f_LL, num_samples)
 
-building_failure_check = []
-for i =1:num_samples
-    building_failure_check = push!(building_failure_check, check_building_collapse(f_y, f_DL, f_LL))
+    building_failure_check = []
+    for i =1:num_samples
+        building_failure_check = push!(building_failure_check, check_building_collapse(f_y, f_DL, f_LL))
+    end
+
+    building_failure_number = length(findall(check->check=="yes", building_failure_check))
+
+    probability_of_building_failure = (building_failure_number / num_samples)
+
+    return probability_of_building_failure
+
 end
 
-building_failure_number = length(findall(check->check=="yes", building_failure_check))
 
-probability_of_building_failure = (building_failure_number / num_samples)
-
+probability_of_building_failure = calculate_building_failure_probability(f_y, f_DL, f_LL, num_samples)
