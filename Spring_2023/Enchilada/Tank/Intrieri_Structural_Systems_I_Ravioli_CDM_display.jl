@@ -206,6 +206,6 @@ InstantFrame.Show.point_loads!(ax, point_load, node, arrow_scale, arrow_head_sca
 figure
 
 n = fill(5, length(element.numbers))
-scale = (1.0, 1.0, 1.0)
+scale = (100.0, 100.0, 100.0)
 linecolor = :blue
 InstantFrame.Show.deformed_shape!(ax, model.solution.displacements, model.properties.global_dof, element, node, model.properties, model.solution.connections, n, scale, linecolor)

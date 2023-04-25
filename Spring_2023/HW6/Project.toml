@@ -1,3 +1,4 @@
 [deps]
+AISIS100 = "01f7396e-a581-4110-84fa-e8964400bef8"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
