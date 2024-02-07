@@ -7,24 +7,16 @@ using LinearAlgebra
 #Calculate the deformation of a 2D truss element.
 
 #Define section properties.
-A = [1.0]
+A = [1.0, 2.3, 4.6]
 
 #Define material properties.
-E = [29000.0]
+E = [29000.0, 15000.0, 1000.0] #ksi
 
 #Define nodal coordinates.
 node_coordinates = [[0.0, 0.0], [24.0, -48.0]]
 
-#Define element connectivity.
-element_connectivity = [(1, 2), (2,3), (3,4)]
-
-#Define support degrees of freedom.
-supports = [1, 2, 4]
-
-#Define external loads.
-num_dof = size(node_coordinates, 1) * 2
-F = zeros(Float64, num_dof)
-F[3] = 10.0 
+#Define element connectivity.  i to j
+element_connectivity = [(1, 2)]
 
 ####Calculations#####
 
@@ -38,10 +30,7 @@ node_coordinates = [[0.0, 0.0], [24.0, -48.0]]
 Δy = node_coordinates[2][2] - node_coordinates[1][2]
 Δx = node_coordinates[2][1] - node_coordinates[1][1]
 θ = atan(Δy, Δx)
-rad2deg(θ)
-rad2deg(π - θ)
 
-#atan2 in Python?
 
 #local element stiffness matrix
 function define_k_local(E, A, L)
@@ -76,26 +65,4 @@ end
 β = define_rotation_matrix(θ)
 
 #define global element K matrix 
-k_global = β' * k_local * β
-
-
-#assemble 
-K = k_global
-
-# #partition
-# p = [3]
-# s = [1, 2, 4]
-
-# Kpp = K[p, p]
-# Kss = K[s, s]
-# Kps = K[p, s]
-# Ksp = K[s, p]
-
-# Fp = F[p]
-
-# #define imposed displacements
-# u = zeros(Float64, num_dof)
-# us = u[s] 
-
-# #solve for displacements at free degrees of freedom
-# up = Kpp \ (Fp - Kps * us)
+k_e_global = β' * k_local * β
