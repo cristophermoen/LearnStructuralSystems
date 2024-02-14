@@ -1,5 +1,5 @@
 #EN.560.301 Structural Systems I 
-#Lecture 6
+#Lecture 7
 #February 2024
 
 using LinearAlgebra
