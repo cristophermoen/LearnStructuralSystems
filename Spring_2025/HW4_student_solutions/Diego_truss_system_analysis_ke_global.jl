@@ -8,41 +8,28 @@ nodes = Vector{Vector{Float64}}(undef, 0)
 
 #[x, y]   #inches
 push!(nodes, [0.0, 0.0])
-push!(nodes, [-100.0, -100.0])
-push!(nodes, [100.0, -100.0])
+push!(nodes, [3, 4])
+push!(nodes, [10.0, -10.0])
 
 
 #material properties    #inches lbf 
 # library 
 #                    E  steel        wood    carbon fiber
-material_properties = [29000000.0, 10000.0, 15000000.0]
+material_properties = [29500000.0, 10000.0, 15000000.0]
 
 #define section properties
 #library 
 
          #cross-sectional area A   inches^2            
-section_properties = [1.0, 2.0, 3.6]
+section_properties = [0.1, 10.0, 3.6]
 
 #[node i  to node j  material property, section properties] 
-elements = [[1, 2, 1, 2], [1, 3, 3, 1], [2, 3, 2, 3]]
-
-#supports 
-#Define fixed degrees of freedom
-s = [3, 4, 5, 6]
-
-#Define external forces
-F = zeros(Float64, size(nodes)[1]*2)
-F[1] = 100000.0  #lbs 
-
-#Define any imposed displacements 
-u = zeros(Float64, size(nodes)[1]*2)
+elements = [[1, 2, 1, 1], [1, 3, 3, 1], [2, 3, 2, 3]]
 
 
 ###############
 
-#get vector of cross-sectional areas 
 A = [section_properties[elements[i][4]] for i in eachindex(elements)]
-
 E = [material_properties[elements[i][3]] for i in eachindex(elements)]
 L = [calculate_element_length(nodes[elements[i][1]], nodes[elements[i][2]]) for i in eachindex(elements)]
 
@@ -63,40 +50,11 @@ K = zeros(Float64, num_dof, num_dof)
 K = assemble_global_stiffness_matrix(num_dof, ke_global, element_global_dof)
 
 
-#partition Big Mac 
+# for i in eachindex(ke_global)
 
-p = setdiff(1:num_dof, s)  #free dof
-
-Kpp = K[p, p]
-Kss = K[s, s]
-Kps = K[p, s]
-Ksp = K[s, p]
-
-Fp = F[p]
-
-
-####SOLVE FOR GLOBAL DISPLACEMENTS
-us = u[s] #if there are any imposed displacements, get them here
-up = Kpp \ (Fp - Kps * us)
-# up = Kpp^-1 * (Fp - Kps * us)
-
-#fill displacement vector with solution
-u[p] = up
-
-#SOLVE FOR REACTIONS
-Fs = Ksp * up + Kss * us
-
-####SOLVE FOR ELEMENT INTERNAL FORCES
-
-#find global displacements at node i and node j of each element
-u_element_global = [u[element_global_dof[i]] for i in eachindex(element_global_dof)]
-
-#find element displacements in element local coordinate system 
-δ = [β[i] * u_element_global[i] for i in eachindex(u_element_global)]
-
-#solve for internal forces in each element 
-P = [ke_local[i] * δ[i] for i in eachindex(ke_local)] 
-
-
+#     i = 2
+#     K[element_global_dof[i], element_global_dof[i]] += ke_global[i]
+    
+# end
 
 

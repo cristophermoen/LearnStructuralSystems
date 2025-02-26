@@ -1,50 +1,67 @@
 
-using LinearAlgebra
-include("/Users/crismoen/Documents/dev/LearnStructuralSystems/Spring_2025/Lecture_8_truss_system_stiffness/truss_helpers.jl")
+using LinearAlgebra, CSV, DataFrames
+
+include("./truss_helpers.jl")
+
 #Analyze a truss, calculate displacement field when some loads are applied 
 
+node_data = CSV.read("Spring_2025/Lecture_11_joist_analysis/nodes.csv", DataFrame)
 
+element_data = CSV.read("Spring_2025/Lecture_11_joist_analysis/elements.csv", DataFrame)
+
+
+#[X, Y]   #inches
 nodes = Vector{Vector{Float64}}(undef, 0)
-
-#[x, y]   #inches
-push!(nodes, [0.0, 0.0])
-push!(nodes, [-100.0, -100.0])
-push!(nodes, [100.0, -100.0])
+for i in eachindex(node_data.X)
+    push!(nodes, [node_data.X[i], node_data.Y[i]])
+end
 
 
 #material properties    #inches lbf 
 # library 
-#                    E  steel        wood    carbon fiber
-material_properties = [29000000.0, 10000.0, 15000000.0]
+#                    E  steel     
+material_properties = [29500000.0]
 
 #define section properties
 #library 
 
-         #cross-sectional area A   inches^2            
-section_properties = [1.0, 2.0, 3.6]
+         #cross-sectional area A   inches^2    
+         #chord, diagonal        
+section_properties = [0.877, 0.30]
 
 #[node i  to node j  material property, section properties] 
-elements = [[1, 2, 1, 2], [1, 3, 3, 1], [2, 3, 2, 3]]
+elements = Vector{Vector{Int}}(undef, 0)
+for i in eachindex(element_data.node_i)
+    push!(elements, [element_data.node_i[i], element_data.node_j[i], element_data.mat_prop[i], element_data.sect_prop[i]])
+end
 
-#supports 
+
 #Define fixed degrees of freedom
-s = [3, 4, 5, 6]
-
-#Define external forces
-F = zeros(Float64, size(nodes)[1]*2)
-F[1] = 100000.0  #lbs 
+s = [1, 2, 24]
 
 #Define any imposed displacements 
 u = zeros(Float64, size(nodes)[1]*2)
 
+#Define uplift uniform load on top chord 
+L = [calculate_element_length(nodes[elements[i][1]], nodes[elements[i][2]]) for i in eachindex(elements)]
+w = -300.0 / 12 #lbs/ft to lbs/in
+
+F = zeros(Float64, size(nodes)[1]*2)
+
+top_chord_elements = 1:11
+
+for i in eachindex(top_chord_elements)
+
+    F[2* i] += w * L[i]/2
+    F[2* (i + 1)] += w * L[i]/2
+
+end
 
 ###############
 
 #get vector of cross-sectional areas 
 A = [section_properties[elements[i][4]] for i in eachindex(elements)]
-
 E = [material_properties[elements[i][3]] for i in eachindex(elements)]
-L = [calculate_element_length(nodes[elements[i][1]], nodes[elements[i][2]]) for i in eachindex(elements)]
 
 θ = [calculate_element_orientation(nodes[elements[i][1]], nodes[elements[i][2]]) for i in eachindex(elements)]
 
@@ -82,6 +99,10 @@ up = Kpp \ (Fp - Kps * us)
 
 #fill displacement vector with solution
 u[p] = up
+
+#maximum uplift deflection
+minimum(u[2:2:end])
+argmin(u[2:2:end])
 
 #SOLVE FOR REACTIONS
 Fs = Ksp * up + Kss * us
