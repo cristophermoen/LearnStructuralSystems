@@ -44,7 +44,7 @@ u = zeros(Float64, size(nodes)[1]*2)
 
 #Define uplift uniform load on top chord 
 L = [calculate_element_length(nodes[elements[i][1]], nodes[elements[i][2]]) for i in eachindex(elements)]
-w = -300.0 / 12 #lbs/ft to lbs/in
+w = 300.0 / 12 #lbs/ft to lbs/in
 
 F = zeros(Float64, size(nodes)[1]*2)
 
