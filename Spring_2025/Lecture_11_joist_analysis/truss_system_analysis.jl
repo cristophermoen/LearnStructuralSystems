@@ -50,6 +50,8 @@ F = zeros(Float64, size(nodes)[1]*2)
 
 top_chord_elements = 1:11
 
+sum(L[top_chord_elements])
+
 for i in eachindex(top_chord_elements)
 
     F[2* i] += w * L[i]/2
