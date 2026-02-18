@@ -1,0 +1,6 @@
+[deps]
+AISIS100 = "01f7396e-a581-4110-84fa-e8964400bef8"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+CrossSectionGeometry = "e5713cf4-1a83-4860-95bf-b82253e75fb4"
+LinesCurvesNodes = "74a74c3a-221d-4cd1-a4eb-c3c8149e7592"
+SectionProperties = "03320fb2-42b0-43fd-9b66-b95dbaa39193"
