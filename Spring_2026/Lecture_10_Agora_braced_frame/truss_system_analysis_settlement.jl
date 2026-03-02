@@ -34,11 +34,12 @@ s = [1, 2, 3, 4]
 
 #Define external forces
 F = zeros(Float64, size(nodes)[1]*2)
-F[5] = 100000.0  #lbs 
+# F[5] = 100000.0  #lbs 
+# F[7] = 100000.0 #lbs 
 
 #Define any imposed displacements 
 u = zeros(Float64, size(nodes)[1]*2)
-
+u[2] = -3.0 #inches 
 
 ###############
 
